@@ -19,9 +19,9 @@ def load_data(dir='data',encoding='utf-8-sig'):
     'xlsx':map(lambda x:os.path.join(os.path.join('.',dir),x.name),filter(lambda x:x.name.find('xlsx') != -1,os.scandir(os.path.join('.',dir))))}
     # map(lambda x:os.path.join(os.path.join('.',dir),x.name),os.scandir(os.path.join('.',dir)))
     columns = ['region','symbol','name','listed']
-    data = pd.concat(map(lambda x:pd.read_csv(x,encoding=encoding),paths['csv'])).drop_duplicates('symbol').reset_index(drop=True)
-    data = data[columns]
-    data['symbol'] = data[['region','symbol']].apply(lambda x:x[1:] if x[0] == 'KR' else x[1].replace('-','.'),axis=1)
+    raw_data = pd.concat(map(lambda x:pd.read_csv(x,encoding=encoding),paths['csv'])).drop_duplicates('symbol').reset_index(drop=True)
+    raw_data = raw_data[columns]
+    raw_data['symbol'] = raw_data[['region','symbol']].apply(lambda x:x[1:] if x[0] == 'KR' else x[1].replace('-','.'),axis=1)
 
     ref_data = pd.DataFrame()
     for file_name in paths['xlsx']:
@@ -35,9 +35,7 @@ def load_data(dir='data',encoding='utf-8-sig'):
         df = df[['region','symbol']]
         ref_data = pd.concat([ref_data,df])
 
-    data = data.merge(ref_data,how='outer',on=['region','symbol'],indicator=True)
-
-    print(data)
+    data = raw_data.merge(ref_data,how='outer',on=['region','symbol'],indicator=True)
 
     data['valid'] = data['_merge'].apply(lambda x:'OK' if x in ('both','right_only') else 'Not Available')
 
