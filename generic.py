@@ -39,9 +39,9 @@ def load_data(dir='data',encoding='utf-8-sig'):
 
     print(ref_data)
 
-    print(raw_data.merge(ref_data,how='left'))
+    print(pd.merge(raw_data,ref_data,how='left'))
 
-    data = raw_data.merge(ref_data,how='outer',on=['region','symbol'],indicator=True)
+    data = pd.merge(raw_data,ref_data,how='outer',on=['region','symbol'],indicator=True)
 
     print(data)
 
