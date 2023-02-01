@@ -35,6 +35,8 @@ def load_data(dir='data',encoding='utf-8-sig'):
         df = df[['region','symbol']]
         ref_data = pd.concat([ref_data,df])
 
+    print(data)
+
     data = data.merge(ref_data,how='outer',on=['region','symbol'],indicator=True)
     data['valid'] = data['_merge'].apply(lambda x:'OK' if x in ('both','right_only') else 'Not Available')
 
