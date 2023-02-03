@@ -37,7 +37,7 @@ async def no_tickers():
 
 # GET Ticker
 @app.get('/tickers/{symbol}')
-async def get_tickers():
+async def get_tickers(symbol: str):
     if symbol:
         if isinstance(symbol,str):
             symbol = [symbol]
