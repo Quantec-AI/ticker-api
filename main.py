@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from generic import *
 
 import uvicorn
@@ -22,27 +23,36 @@ async def startup_event():
 # Front API
 @app.get('/')
 async def welcome():
-    return {'msg':f'Welcome to {title}'}
+    content = {'msg':f'Welcome to {title}'}
+    headers = {'charset':'utf-8-sig'}
+    return JSONResponse(content=content, headers=headers)
+    # return {'msg':f'Welcome to {title}'}
 
 # Edge-case (No symbol entered)
 @app.get('/tickers/')
 async def no_tickers():
-    return {'error':'Enter symbol name'}
+    content = {'error':'Enter symbol name'}
+    headers = {'charset':'utf-8-sig'}
+    return JSONResponse(content=content, headers=headers)
 
 # GET Ticker
 @app.get('/tickers/{symbol}')
-async def get_tickers(symbol: str):
+async def get_tickers():
     if symbol:
         if isinstance(symbol,str):
             symbol = [symbol]
         
         output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']]
-        print(output_data.to_dict(orient='records'))
+        # print(output_data.to_dict(orient='records'))
         
         if len(output_data)>0:
-            return output_data.to_dict(orient='records')
+            content = output_data.to_dict(orient='records')
         
         else:
-            return {'error':f'symbol: {symbol} not found'}
+            content = {'error':f'symbol: {symbol} not found'}
     else:
-        return {'error':f'symbol: {symbol} not found'}
+        content = {'error':f'symbol: {symbol} not found'}
+
+    headers = {'charset':'utf-8-sig'}
+
+    return JSONResponse(content=content, headers=headers)
