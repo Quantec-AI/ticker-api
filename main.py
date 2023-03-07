@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Response, Query
+from functools import reduce
+import json
 from generic import *
 
 import uvicorn
@@ -17,42 +18,78 @@ app = FastAPI(
 # On startup
 @app.on_event('startup')
 async def startup_event():
-    global data
+    global data, content_type
     data = load_data()
+    content_type = f'application/json;charset=utf-8'
 
 # Front API
 @app.get('/')
 async def welcome():
-    content = {'msg':f'Welcome to {title}'}
-    headers = {'charset':'utf-8-sig'}
-    return JSONResponse(content=content, headers=headers)
-    # return {'msg':f'Welcome to {title}'}
+    content_dict = {'msg':f'Welcome to {title}'}
+    content = json.dumps(content_dict,ensure_ascii=False)
 
-# Edge-case (No symbol entered)
+    return Response(content=content, media_type=content_type)
+
+# GET by Ticker
 @app.get('/tickers/')
-async def no_tickers():
-    content = {'error':'Enter symbol name'}
-    headers = {'charset':'utf-8-sig'}
-    return JSONResponse(content=content, headers=headers)
+async def get_tickers(symbol: Union[list[str], None] = Query(default=None), name: Union[list[str], None] = Query(default=None)):
+    # Edge-case (No symbol entered)
+    if not symbol and not name:
+        content_dict = {'error':'Enter company ticker or name'}
+        content = json.dumps(content_dict,ensure_ascii=False)
 
-# GET Ticker
-@app.get('/tickers/{symbol}')
-async def get_tickers():
-    if symbol:
-        if isinstance(symbol,str):
-            symbol = [symbol]
-        
-        output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']]
-        # print(output_data.to_dict(orient='records'))
-        
-        if len(output_data)>0:
-            content = output_data.to_dict(orient='records')
-        
-        else:
-            content = {'error':f'symbol: {symbol} not found'}
+        return Response(content=content, media_type=content_type)
+    
     else:
-        content = {'error':f'symbol: {symbol} not found'}
+        query = {'name':[],'symbol':[]}
+        if symbol:
+            query['symbol'] = symbol[:10]
+        if name:
+            query['name'] = name[:10]
+        # output_data = data.loc[(data.symbol.isin(query['symbol'])) | (data.name.isin(query['name'])),['region','symbol','name','valid']]
+        output_data = data.loc[(data.symbol.isin(query['symbol']))]
 
-    headers = {'charset':'utf-8-sig'}
+        for group in query['name']:
+            df = data.copy()
+            dfs = map(lambda q:df.loc[df.name.str.contains(q)],group)
+            df = reduce(lambda left,right: pd.merge(left,right), dfs)
+            output_data = pd.concat([output_data,df])
 
-    return JSONResponse(content=content, headers=headers)
+        if len(output_data)>0:
+            output_data = output_data[['region','symbol','name','valid']]
+            content_dict = output_data.to_dict(orient='records')
+
+        else:
+            content_dict = {'error':f'symbol: {symbol} not found'}
+
+        content = json.dumps(content_dict,ensure_ascii=False)
+
+        return Response(content=content, media_type=content_type)
+    
+
+# # GET by Ticker
+# @app.get('/tickers/')
+# async def get_by_name(name: Union[list[str], None] = Query(default=None)):
+#     # Edge-case (No symbol entered)
+#     if not name:
+#         content_dict = {'error':'Enter company name'}
+#         content = json.dumps(content_dict,ensure_ascii=False)
+
+#         return Response(content=content, media_type=content_type)
+    
+#     else:
+#         name = name[:10]
+#         output_data = data.loc[data.name.isin(name),['region','symbol','name','valid']]
+#         # print(output_data.to_dict(orient='records'))
+
+#         if len(output_data)>0:
+#             content_dict = output_data.to_dict(orient='records')
+
+#         else:
+#             content_dict = {'error':f'name: {name} not found'}
+
+#         content = json.dumps(content_dict,ensure_ascii=False)
+
+#         return Response(content=content, media_type=content_type)
+    
+
