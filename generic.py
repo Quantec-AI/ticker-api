@@ -2,15 +2,18 @@ import pandas as pd
 import os
 import re
 from pydantic import BaseModel
-from typing import Optional, Union, List
+from typing import Optional, Union
 
 # Ticker Data Class Definition
 # symbol is required
 class TickerData(BaseModel):
-    region: Union[str, List[str]]           # Region (e.g., US)
-    symbol: Union[str, List[str]]           # Ticker (e.g., AAPL)
-    name: Optional[Union[str, List[str]]]   # Name (e.g., Apple Inc.)
-    listed: Optional[Union[str, List[str]]] # Exchange (e.g., NASDAQ)
+    region: Union[list[str], None]           # Region (e.g., US)
+    symbol: Union[list[str], None]           # Ticker (e.g., AAPL)
+    name: Union[list[str], None]           # Region (e.g., US)
+    listed: Union[list[str], None]           # Ticker (e.g., AAPL)
+    
+    # name: Optional[Union[list[str], None]]   # Name (e.g., Apple Inc.)
+    # listed: Optional[Union[list[str], None]] # Exchange (e.g., NASDAQ)
 
 
 # Load data
@@ -37,5 +40,6 @@ def load_data(dir='data',encoding='utf-8-sig'):
 
     data = pd.merge(raw_data,ref_data,how='outer',on=['region','symbol'],indicator=True)
     data['valid'] = data['_merge'].apply(lambda x:'OK' if x in ('both','right_only') else 'Not Available')
+    data.loc[data['_merge']=='right_only','name'] = 'Placeholder'
 
     return data
