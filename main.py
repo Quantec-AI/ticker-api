@@ -32,7 +32,7 @@ async def welcome():
 
 # GET by Ticker
 @app.get('/tickers/')
-async def get_tickers(symbol: Union[list[str], None] = Query(default=None), name: Union[list[str], None] = Query(default=None)):
+async def get_tickers(symbol: Union[List[str], None] = Query(default=None), name: Union[List[str], None] = Query(default=None)):
     # Edge-case (No symbol entered)
     if not symbol and not name:
         content_dict = {'error':'Enter company ticker or name'}
@@ -43,17 +43,18 @@ async def get_tickers(symbol: Union[list[str], None] = Query(default=None), name
     else:
         query = {'name':[],'symbol':[]}
         if symbol:
-            query['symbol'] = symbol[:10]
+            query['symbol'] = symbol
         if name:
-            query['name'] = name[:10]
-        # output_data = data.loc[(data.symbol.isin(query['symbol'])) | (data.name.isin(query['name'])),['region','symbol','name','valid']]
-        output_data = data.loc[(data.symbol.isin(query['symbol']))]
+            query['name'] = name
 
-        for group in query['name']:
-            df = data.copy()
-            dfs = map(lambda q:df.loc[df.name.str.contains(q)],group)
-            df = reduce(lambda left,right: pd.merge(left,right), dfs)
-            output_data = pd.concat([output_data,df])
+        ## Symbol
+        symbol_data = data.loc[(data.symbol.isin(query['symbol']))]
+
+        ## Name
+        name_data = pd.concat([data.loc[data.name.str.contains(group)] for group in query['name']])
+
+        # All Data 
+        output_data = pd.concat([symbol_data,name_data]).drop_duplicates()[:10]
 
         if len(output_data)>0:
             output_data = output_data[['region','symbol','name','valid']]
