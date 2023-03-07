@@ -32,7 +32,7 @@ async def welcome():
 
 # GET by Ticker
 @app.get('/tickers/')
-async def get_tickers(symbol: Union[List[str], None] = Query(default=None), name: Union[list[str], None] = Query(default=None)):
+async def get_tickers(symbol: Union[List[str], None] = Query(default=None), name: Union[List[str], None] = Query(default=None)):
     # Edge-case (No symbol entered)
     if not symbol and not name:
         content_dict = {'error':'Enter company ticker or name'}
