@@ -2,15 +2,15 @@ import pandas as pd
 import os
 import re
 from pydantic import BaseModel
-from typing import Optional, Union
+from typing import Union, List
 
 # Ticker Data Class Definition
 # symbol is required
 class TickerData(BaseModel):
-    region: Union[list[str], None]           # Region (e.g., US)
-    symbol: Union[list[str], None]           # Ticker (e.g., AAPL)
-    name: Union[list[str], None]           # Region (e.g., US)
-    listed: Union[list[str], None]           # Ticker (e.g., AAPL)
+    region: Union[List[str], None]           # Region (e.g., US)
+    symbol: Union[List[str], None]           # Ticker (e.g., AAPL)
+    name: Union[List[str], None]           # Region (e.g., US)
+    listed: Union[List[str], None]           # Ticker (e.g., AAPL)
     
     # name: Optional[Union[list[str], None]]   # Name (e.g., Apple Inc.)
     # listed: Optional[Union[list[str], None]] # Exchange (e.g., NASDAQ)
