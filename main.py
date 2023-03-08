@@ -46,7 +46,7 @@ async def no_symbol():
 async def get_ticker(symbol: str):
     if symbol:
         if isinstance(symbol,str):
-            symbol = set(map(lambda x:x.upper(),symbol))
+            symbol = set(map(lambda x:x.upper(),[symbol]))
         output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']][:10]
 
         if len(output_data)>0:
