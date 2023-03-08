@@ -46,7 +46,7 @@ async def no_symbol():
 async def get_ticker(symbol: str):
     if symbol:
         if isinstance(symbol,str):
-            symbol = [symbol]
+            symbol = set(map(lambda x:x.upper(),symbol))
         output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']][:10]
 
         if len(output_data)>0:
@@ -76,7 +76,8 @@ async def no_name():
 @app.get('/name/{name}')
 async def get_ticker(name: str):
     if name:
-        output_data = data.loc[data.name.str.contains(name),['region','symbol','name','valid']][:10]
+        name = name.lower()
+        output_data = data.loc[data.name.str.lower().str.contains(name),['region','symbol','name','valid']][:10]
 
         if len(output_data)>0:
             content_dict = output_data.to_dict(orient='records')
@@ -104,16 +105,16 @@ async def get_tickers(symbol: Union[List[str], None] = Query(default=None), name
     else:
         query = {'name':[],'symbol':[]}
         if symbol:
-            query['symbol'] = symbol
+            query['symbol'] = set(map(lambda x:x.upper(),symbol))
         if name:
-            query['name'] = name
+            query['name'] = set(map(lambda x:x.lower(),name))
 
         ## Symbol
         symbol_data = data.loc[(data.symbol.isin(query['symbol']))]
 
         ## Name
         if len(query['name'])>0:
-            name_data = pd.concat([data.loc[data.name.str.contains(group)] for group in query['name']])
+            name_data = pd.concat([data.loc[data.name.str.lower().str.contains(group)] for group in query['name']])
         else:
             name_data = pd.DataFrame()
 
