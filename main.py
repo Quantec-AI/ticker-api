@@ -47,7 +47,7 @@ async def get_ticker(symbol: str):
     if symbol:
         if isinstance(symbol,str):
             symbol = [symbol]
-        output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']]
+        output_data = data.loc[data.symbol.isin(symbol),['region','symbol','name','valid']][:10]
 
         if len(output_data)>0:
             content_dict = output_data.to_dict(orient='records')
@@ -76,7 +76,7 @@ async def no_name():
 @app.get('/name/{name}')
 async def get_ticker(name: str):
     if name:
-        output_data = data.loc[data.name.str.contains(name),['region','symbol','name','valid']]
+        output_data = data.loc[data.name.str.contains(name),['region','symbol','name','valid']][:10]
 
         if len(output_data)>0:
             content_dict = output_data.to_dict(orient='records')
